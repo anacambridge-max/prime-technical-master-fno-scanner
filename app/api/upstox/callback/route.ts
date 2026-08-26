@@ -5,14 +5,45 @@ import { saveUpstoxToken } from "../../../../src/integrations/upstox/token-store
 
 export const runtime = "nodejs";
 
-function toExpiryIso(expiresAt?: number, expiresIn?: number): string | null {
+function nextUpstoxExpiryIso(): string {
+  const now = new Date();
+  const expiry = new Date(now);
+  // Upstox OAuth access tokens are valid until 03:30 AM IST the following
+  // calendar day (or the same day when authorization happens before 03:30).
+  const istHour = Number(
+    new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour: "2-digit",
+      hour12: false,
+    }).format(now),
+  );
+  const istMinute = Number(
+    new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
+      minute: "2-digit",
+    }).format(now),
+  );
+  const isBeforeExpiry = istHour < 3 || (istHour === 3 && istMinute < 30);
+  if (!isBeforeExpiry) expiry.setUTCDate(expiry.getUTCDate() + 1);
+
+  const dateParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(expiry);
+  const parts = Object.fromEntries(dateParts.map(({ type, value }) => [type, value]));
+  return new Date(`${parts.year}-${parts.month}-${parts.day}T03:30:00+05:30`).toISOString();
+}
+
+function toExpiryIso(expiresAt?: number, expiresIn?: number): string {
   if (typeof expiresAt === "number" && Number.isFinite(expiresAt)) {
     return new Date(expiresAt * 1000).toISOString();
   }
   if (typeof expiresIn === "number" && Number.isFinite(expiresIn)) {
     return new Date(Date.now() + expiresIn * 1000).toISOString();
   }
-  return null;
+  return nextUpstoxExpiryIso();
 }
 
 export async function GET(request: NextRequest) {
