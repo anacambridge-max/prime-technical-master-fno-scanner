@@ -2,18 +2,37 @@
 
 Production-grade live NSE F&O stock scanner.
 
-## Stage 1
+## Current stage — Upstox OAuth
 
-This repository starts with the infrastructure required to build the scanner from the final specification:
+The repository now contains the first Upstox connection slice:
 
-- Dynamic NSE stock-F&O universe from Upstox instrument data
-- One scanner row per underlying stock
-- Cash-equity primary technical instrument
-- Near-month futures mapping for confirmation
-- Typed domain models and configuration
-- Separation between data ingestion, universe building and scanner engine
+- Server-side Upstox OAuth authorization URL generation
+- Random OAuth `state` generation and callback validation
+- Authorization-code → access-token exchange on the server
+- No client secret or bearer token exposed to browser code
+- Next.js connection-test page at `/`
+- `/api/upstox/login` starts the OAuth flow
+- `/api/upstox/callback` receives and validates the OAuth callback
 
-## Architecture
+The authorization flow follows Upstox's documented OAuth 2.0 authorization-code process. The registered redirect URI must exactly match the value configured in the Upstox app.
+
+## Local setup
+
+1. Copy `.env.example` to `.env.local`.
+2. Put your `PRIME MASTER` API Key in `UPSTOX_CLIENT_ID`.
+3. Put your `PRIME MASTER` API Secret in `UPSTOX_CLIENT_SECRET`.
+4. Keep `UPSTOX_REDIRECT_URI` as:
+
+```text
+http://localhost:3000/api/upstox/callback
+```
+
+5. Run `npm install` and then `npm run dev`.
+6. Open `http://localhost:3000` and click **Connect Upstox**.
+
+The access token is deliberately not returned to the browser. Token persistence will be added server-side in the next data-persistence slice.
+
+## Stage 1 architecture
 
 ```text
 Upstox Instrument Master
@@ -35,12 +54,8 @@ Master Score + State Machine
 API → Dashboard
 ```
 
-## Runtime separation
+## Security
 
-The Next.js application will serve the dashboard/API. Persistent Upstox WebSocket ingestion and scanner computation will run in a separate worker process when required; the design does not assume a long-lived WebSocket inside standard Vercel serverless execution.
+Never commit `.env.local`, the Upstox API Secret, or an access token. The repository `.gitignore` excludes local environment files.
 
-## Environment
-
-Copy `.env.example` to `.env.local` and provide credentials only on the server/worker side.
-
-No Upstox secret or access token belongs in browser code or source control.
+Persistent Upstox WebSocket ingestion and scanner computation will run in a separate worker when required; the architecture does not assume a long-lived WebSocket inside standard Vercel serverless execution.
