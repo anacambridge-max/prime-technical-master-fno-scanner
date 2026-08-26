@@ -102,7 +102,9 @@ export async function GET() {
       const low = ohlc?.low ?? null;
       const previousClose = ohlc?.close ?? null;
       const range = high !== null && low !== null && high > low ? high - low : null;
-      const position = range && ltp !== null ? Math.max(0, Math.min(1, (ltp - low) / range)) : null;
+      const position = range !== null && ltp !== null && low !== null
+        ? Math.max(0, Math.min(1, (ltp - low) / range))
+        : null;
       const changePct = previousClose && ltp !== null ? ((ltp - previousClose) / previousClose) * 100 : null;
       const score = changePct === null || position === null ? null : Math.round(Math.max(0, Math.min(100, 50 + changePct * 5 + (position - 0.5) * 30)));
       const signal = score === null ? "NONE" : score >= 70 && position >= 0.7 ? "BUY" : score >= 58 ? "WATCH" : "NONE";
