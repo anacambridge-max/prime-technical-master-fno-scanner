@@ -97,7 +97,6 @@ export async function GET() {
       const quote = quoteByInstrumentToken.get(item.equityInstrumentKey) || quoteData[`NSE_EQ:${item.symbol}`];
       const ohlc = quote?.ohlc;
       const ltp = quote?.last_price ?? null;
-      const open = ohlc?.open ?? null;
       const high = ohlc?.high ?? null;
       const low = ohlc?.low ?? null;
       const previousClose = ohlc?.close ?? null;
@@ -107,7 +106,13 @@ export async function GET() {
         : null;
       const changePct = previousClose && ltp !== null ? ((ltp - previousClose) / previousClose) * 100 : null;
       const score = changePct === null || position === null ? null : Math.round(Math.max(0, Math.min(100, 50 + changePct * 5 + (position - 0.5) * 30)));
-      const signal = score === null ? "NONE" : score >= 70 && position >= 0.7 ? "BUY" : score >= 58 ? "WATCH" : "NONE";
+      const signal = score === null || position === null
+        ? "NONE"
+        : score >= 70 && position >= 0.7
+          ? "BUY"
+          : score >= 58
+            ? "WATCH"
+            : "NONE";
       return { ...item, quoteKey: quote ? `NSE_EQ:${item.symbol}` : null, lastPrice: ltp, changePct, ohlc: ohlc ?? null, volume: quote?.volume ?? null, oi: quote?.oi ?? null, score, signal };
     });
 
