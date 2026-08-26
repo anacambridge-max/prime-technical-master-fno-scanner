@@ -34,14 +34,21 @@ export async function supabaseRest<T>(
     cache: "no-store",
   });
 
+  const body = await response.text();
+
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Supabase request failed (${response.status})${body ? `: ${body}` : ""}`);
+    throw new Error(
+      `Supabase request failed (${response.status})${body ? `: ${body}` : ""}`,
+    );
   }
 
-  if (response.status === 204) {
+  if (!body.trim()) {
     return undefined as T;
   }
 
-  return (await response.json()) as T;
+  try {
+    return JSON.parse(body) as T;
+  } catch {
+    throw new Error("Supabase returned an invalid JSON response.");
+  }
 }
