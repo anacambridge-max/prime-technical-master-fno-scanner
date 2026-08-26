@@ -127,13 +127,25 @@ export async function GET() {
       sample.map((item) => item.equityInstrumentKey),
     );
 
+    // Upstox returns Full Market Quote objects keyed by exchange:symbol
+    // (for example NSE_EQ:NHPC), while each quote also carries the canonical
+    // instrument_token (for example NSE_EQ|INE848E01016). Match using the
+    // canonical token first; fall back to the response key/trading symbol.
+    const quoteEntries = Object.entries(quoteData);
+    const quoteByInstrumentToken = new Map(
+      quoteEntries
+        .map(([responseKey, quote]) => [quote.instrument_token || responseKey, quote] as const)
+        .filter(([key]) => Boolean(key)),
+    );
+
     const sampleWithQuotes = sample.map((item) => {
-      const key = Object.keys(quoteData).find(
-        (quoteKey) => quoteKey === item.equityInstrumentKey.replace("|", ":") || quoteKey.endsWith(item.equityInstrumentKey.split("|")[1] || "__never__"),
-      );
-      const quote = key ? quoteData[key] : undefined;
+      const canonicalQuote = quoteByInstrumentToken.get(item.equityInstrumentKey);
+      const responseKey = `NSE_EQ:${item.symbol}`;
+      const quote = canonicalQuote || quoteData[responseKey];
+
       return {
         ...item,
+        quoteKey: quote ? responseKey : null,
         lastPrice: quote?.last_price ?? null,
         ohlc: quote?.ohlc ?? null,
         volume: quote?.volume ?? null,
