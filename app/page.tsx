@@ -141,18 +141,29 @@ export default function Home() {
               <tbody>
                 {rows.length === 0 ? (
                   <tr><td colSpan={8} className="px-3 py-16 text-center text-slate-500">Click <b>Scan Now</b> to load the F&amp;O market universe.</td></tr>
-                ) : rows.slice(0, 250).map((x) => (
-                  <tr key={x.symbol} className="border-b border-slate-800/70 hover:bg-slate-800/40">
-                    <td className="px-3 py-3 font-bold">{x.symbol}</td>
-                    <td className="px-3 py-3">₹{fmt(x.ltp)}</td>
-                    <td className={`px-3 py-3 font-semibold ${x.changePct !== undefined && x.changePct > 0 ? "text-emerald-400" : x.changePct !== undefined && x.changePct < 0 ? "text-red-400" : "text-slate-300"}`}>
-                      {typeof x.changePct === "number" && Number.isFinite(x.changePct) ? `${x.changePct.toFixed(2)}%` : "—"}
-                    </td>
-                    <td className="px-3 py-3 text-slate-300">₹{fmt(x.dayHigh)}</td><td className="px-3 py-3 text-slate-300">₹{fmt(x.dayLow)}</td><td className="px-3 py-3 text-slate-300">{fmt(x.volume)}</td>
-                    <td className="px-3 py-3 font-bold">{x.score ? x.score.toFixed(0) : "—"}</td>
-                    <td className="px-3 py-3"><span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${x.signal === "BUY" ? "bg-emerald-500/15 text-emerald-400" : x.signal === "WATCH" ? "bg-amber-500/15 text-amber-400" : "bg-slate-800 text-slate-500"}`}>{x.signal}</span></td>
-                  </tr>
-                ))}
+                ) : rows.slice(0, 250).map((x) => {
+                  const changePct = x.changePct;
+                  const changeClass = changePct !== undefined && changePct > 0
+                    ? "text-emerald-400"
+                    : changePct !== undefined && changePct < 0
+                      ? "text-red-400"
+                      : "text-slate-300";
+
+                  return (
+                    <tr key={x.symbol} className="border-b border-slate-800/70 hover:bg-slate-800/40">
+                      <td className="px-3 py-3 font-bold">{x.symbol}</td>
+                      <td className="px-3 py-3">₹{fmt(x.ltp)}</td>
+                      <td className={`px-3 py-3 font-semibold ${changeClass}`}>
+                        {typeof changePct === "number" && Number.isFinite(changePct) ? `${changePct.toFixed(2)}%` : "—"}
+                      </td>
+                      <td className="px-3 py-3 text-slate-300">₹{fmt(x.dayHigh)}</td>
+                      <td className="px-3 py-3 text-slate-300">₹{fmt(x.dayLow)}</td>
+                      <td className="px-3 py-3 text-slate-300">{fmt(x.volume)}</td>
+                      <td className="px-3 py-3 font-bold">{x.score ? x.score.toFixed(0) : "—"}</td>
+                      <td className="px-3 py-3"><span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${x.signal === "BUY" ? "bg-emerald-500/15 text-emerald-400" : x.signal === "WATCH" ? "bg-amber-500/15 text-amber-400" : "bg-slate-800 text-slate-500"}`}>{x.signal}</span></td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
