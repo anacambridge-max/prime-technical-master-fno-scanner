@@ -12,7 +12,7 @@
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "upstox-js-sdk": "^2.20.0"
+    "upstox-js-sdk": "^2.30.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
