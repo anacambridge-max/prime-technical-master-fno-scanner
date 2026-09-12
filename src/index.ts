@@ -15,3 +15,4 @@ export { emaSeries, emaContext } from "./engine/prime/ema";
 export { averageVolume, classifyVolume } from "./engine/prime/volume";
 export { buildYesterdayLevels, nearestOpposingLevel } from "./engine/prime/levels";
 export { classifyLevelReaction } from "./engine/prime/reaction";
+export { scanPrime } from "./engine/prime/scanner";
