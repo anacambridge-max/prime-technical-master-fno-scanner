@@ -1,5 +1,3 @@
-import { getUpstoxConfig } from "./config";
-
 export interface UpstoxHistoricalCandle {
   timestamp: string;
   open: number;
@@ -41,7 +39,6 @@ export async function getHistoricalCandles(
   if (fromDate && !/^\d{4}-\d{2}-\d{2}$/.test(fromDate)) throw new Error("fromDate must be YYYY-MM-DD");
   if (!Number.isInteger(interval) || interval < 1 || interval > 300) throw new Error("minute interval must be between 1 and 300");
 
-  const config = getUpstoxConfig();
   const encodedKey = encodeURIComponent(instrumentKey);
   const path = `/historical-candle/${encodedKey}/minutes/${interval}/${toDate}${fromDate ? `/${fromDate}` : ""}`;
   const response = await fetch(`https://api.upstox.com/v3${path}`, {
